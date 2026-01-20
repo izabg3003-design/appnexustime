@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { FileText, Calendar, ArrowLeft, HardDrive, Coffee, FileDown, LayoutList, ClipboardList, Clock } from 'lucide-react';
 import { UserProfile, WorkRecord, FinanceSummary } from '../types';
 import { format, parseISO } from 'date-fns';
-import { ptBR, enUS, es, fr, de, it } from 'date-fns/locale';
+import { pt, enUS, es, fr, de, it } from 'date-fns/locale';
 
 interface Props {
   user: UserProfile;
@@ -17,8 +16,8 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   
   const lang = user.settings?.language || 'pt-PT';
-  const locales: Record<string, any> = { 'pt-BR': ptBR, 'pt-PT': ptBR, 'en': enUS, 'es-ES': es, 'es-AR': es, 'fr': fr, 'de': de, 'it': it };
-  const currentLocale = locales[lang] || enUS;
+  const locales: Record<string, any> = { 'pt-PT': pt, 'en': enUS, 'es-ES': es, 'es-AR': es, 'fr': fr, 'de': de, 'it': it };
+  const currentLocale = locales[lang] || pt;
 
   const getNexusId = () => {
     try {
@@ -121,12 +120,12 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
 
             {/* BLOCO FISCAL NO TOPO */}
             <div className="p-8 bg-slate-50 border border-slate-100 rounded-[2rem] print:bg-white print:border-black print:p-6 mb-8">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Informação Profissional e Fiscal</h4>
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Informação Profissional e Fiscal (Portugal)</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                   <div><p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-1">Colaborador</p><p className="text-xs font-black text-slate-900">{user.name}</p></div>
-                  <div><p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-1">NIF / Tax ID</p><p className="text-xs font-black text-slate-900">{user.nif || '---'}</p></div>
+                  <div><p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-1">NIF (Contribuinte)</p><p className="text-xs font-black text-slate-900">{user.nif || '---'}</p></div>
                   <div><p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-1">Valor Base Hora</p><p className="text-xs font-black text-slate-900">{f(user.hourlyRate)}</p></div>
-                  <div><p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p><p className="text-xs font-black text-emerald-600 uppercase">{user.isFreelancer ? 'Prestador de Serviços' : 'Contrato de Trabalho'}</p></div>
+                  <div><p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p><p className="text-xs font-black text-emerald-600 uppercase">{user.isFreelancer ? 'Recibos Verdes' : 'Contrato de Trabalho'}</p></div>
                 </div>
             </div>
 
@@ -134,10 +133,10 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10 print:grid-cols-5">
               {[
                 { label: 'Bruto', val: f(summary.grossTotal), color: 'text-slate-900' },
-                { label: 'Vales', val: f(summary.advancesTotal), color: 'text-amber-600' },
-                { label: 'Retenções', val: f(summary.irsTotal + summary.socialSecurityTotal), color: 'text-red-600' },
+                { label: 'Adiantamentos', val: f(summary.advancesTotal), color: 'text-amber-600' },
+                { label: 'Retenções (IRS/SS)', val: f(summary.irsTotal + summary.socialSecurityTotal), color: 'text-red-600' },
                 { label: 'Extras', val: `+${summary.totalExtraHours}h`, color: 'text-purple-600' },
-                { label: 'Líquido', val: f(summary.netTotal), color: 'text-emerald-700', highlight: true },
+                { label: 'Líquido Final', val: f(summary.netTotal), color: 'text-emerald-700', highlight: true },
               ].map((item, i) => (
                 <div key={i} className={`p-6 rounded-2xl border ${item.highlight ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'bg-slate-50 border-slate-100'} print:border-black print:bg-white`}>
                   <p className="text-[7px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{item.label}</p>
@@ -151,7 +150,7 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
 
           <div className="p-8 md:p-12 print:p-8">
             <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-3">
-              <ClipboardList className="w-4 h-4" /> Detalhamento Operacional de Registos
+              <ClipboardList className="w-4 h-4" /> Detalhamento Operacional de Registos (Ledger PT)
             </h4>
             
             <div className="border border-slate-200 rounded-3xl overflow-x-auto no-scrollbar print:overflow-visible print:border-black print:rounded-none">
@@ -160,10 +159,10 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
                   <tr>
                     <th className="px-3 py-4 w-[8%]">Data</th>
                     <th className="px-2 py-4 text-center w-[10%]">Horário</th>
-                    <th className="px-1 py-4 text-center w-[4%]">Lch</th>
+                    <th className="px-1 py-4 text-center w-[4%]">Alm</th>
                     <th className="px-2 py-4 text-center w-[6%]">H.Reais</th>
                     <th className="px-3 py-4 w-[12%]">Localização</th>
-                    <th className="px-2 py-4 text-center w-[8%]">Vales</th>
+                    <th className="px-2 py-4 text-center w-[8%]">Adiant.</th>
                     <th className="px-2 py-4 text-center w-[8%]">Extras</th>
                     <th className="px-2 py-4 text-right w-[9%] text-red-600 print:text-black">IRS</th>
                     <th className="px-2 py-4 text-right w-[9%] text-blue-600 print:text-black">S.S.</th>
@@ -242,8 +241,8 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
             </div>
 
             <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 print:border-black print:mt-10">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em]">NexusTime Infrastructure v16.0 — Auditoria Digital</p>
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] print:text-black">Digital Nexus Solutions © 2025</p>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.4em]">NexusTime Infrastructure v16.0 — Auditoria Digital Europeia</p>
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] print:text-black">Digital Nexus Solutions © 2026</p>
             </div>
           </div>
         </div>
@@ -259,7 +258,7 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
         <h2 className="text-3xl font-black italic tracking-tighter uppercase text-white">NEXUS<span className="text-purple-400">_REPORT</span></h2>
         <div className="hidden md:flex items-center gap-3 bg-slate-800/40 px-6 py-3 rounded-2xl border border-white/5">
            <HardDrive className="w-4 h-4 text-purple-400" />
-           <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Cloud Sincronizada</span>
+           <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">Cloud Sincronizada (Lisboa)</span>
         </div>
       </div>
 

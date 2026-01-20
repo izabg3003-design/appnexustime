@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Globe, ArrowRight, Fingerprint } from 'lucide-react';
 import { Language } from '../types';
@@ -10,8 +9,7 @@ interface Props {
 const LanguageGate: React.FC<Props> = ({ onSelect }) => {
   const langs: { id: Language; name: string; flag: string; label: string }[] = [
     { id: 'pt-PT', name: 'Português', flag: '🇵🇹', label: 'Selecione o Idioma' },
-    { id: 'pt-BR', name: 'Português (BR)', flag: '🇧🇷', label: 'Selecione o Idioma' },
-    { id: 'en', name: 'English', flag: '🇺🇸', label: 'Select Language' },
+    { id: 'en', name: 'English', flag: '🇬🇧', label: 'Select Language' },
     { id: 'es-ES', name: 'Español', flag: '🇪🇸', label: 'Seleccionar Idioma' },
     { id: 'fr', name: 'Français', flag: '🇫🇷', label: 'Choisir la langue' },
     { id: 'de', name: 'Deutsch', flag: '🇩🇪', label: 'Sprache wählen' },
@@ -23,7 +21,6 @@ const LanguageGate: React.FC<Props> = ({ onSelect }) => {
     { id: 'ja', name: '日本語', flag: '🇯🇵', label: '言語を選択' },
     { id: 'hi', name: 'हिन्दी', flag: '🇮🇳', label: 'भाषा चुनें' },
     { id: 'ga', name: 'Gaeilge', flag: '🇮🇪', label: 'Roghnaigh teanga' },
-    { id: 'es-AR', name: 'Argentina', flag: '🇦🇷', label: 'Elegir idioma' },
   ];
 
   return (
@@ -50,7 +47,7 @@ const LanguageGate: React.FC<Props> = ({ onSelect }) => {
             </div>
           </div>
           <div className="text-right hidden md:block">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Global Platform</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">European Platform</p>
             <p className="text-[10px] text-green-500 font-black mt-1">SECURE CONNECTION ACTIVE</p>
           </div>
         </div>
@@ -58,7 +55,7 @@ const LanguageGate: React.FC<Props> = ({ onSelect }) => {
         <div className="flex-1 overflow-y-auto p-8 md:p-12 custom-scrollbar">
           <h3 className="text-xl font-bold text-slate-300 mb-8 flex items-center gap-3">
              <span className="w-8 h-[1px] bg-slate-700"></span>
-             CHOOSE YOUR REGION / ESCOLHA O IDIOMA
+             CHOOSE YOUR REGION / SELECIONE O IDIOMA
           </h3>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -82,7 +79,7 @@ const LanguageGate: React.FC<Props> = ({ onSelect }) => {
         </div>
 
         <div className="p-8 border-t border-slate-800/50 bg-slate-950/50 text-center shrink-0">
-          <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.4em]">Digital Nexus Solutions — All Rights Reserved 2025</p>
+          <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.4em]">Digital Nexus Solutions — All Rights Reserved 2026</p>
         </div>
       </div>
 

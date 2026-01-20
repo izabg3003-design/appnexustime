@@ -1,7 +1,5 @@
 export const nexusCurrencies = [
-  { code: 'EUR', name: 'Euro', symbol: '€' },
-  { code: 'USD', name: 'US Dollar', symbol: '$' },
-  { code: 'BRL', name: 'Real Brasileiro', symbol: 'R$' }
+  { code: 'EUR', name: 'Euro', symbol: '€' }
 ];
 
 export const translations: Record<string, any> = {
@@ -16,39 +14,39 @@ export const translations: Record<string, any> = {
       syncing: "A sincronizar..."
     },
     splash: {
-      tagline: "Controlo de horas e gestão de IRS num só lugar"
+      tagline: "Controlo de horas e gestão de IRS em Portugal"
     },
     landing: {
       hero: "TRANSFORME HORAS EM",
       heroHighlight: "LUCRO REAL.",
-      subhero: "O NexusTime é o app de controlo de horas ideal para registar horas extra e gerir o seu horário de trabalho em Portugal com precisão absoluta.",
-      badge: "Digital Nexus Solutions • 2026",
+      subhero: "O NexusTime Pro é o app de controlo de horas ideal para registar horas extra, organizar pagamentos e gerir o seu horário de trabalho em Portugal com precisão absoluta.",
+      badge: "Digital Nexus Solutions • Portugal 2026",
       painTitle: "Problemas no Registo",
       solutionTitle: "Solução Digital Nexus",
       pains: [
-        "Não me pagaram horas extra por falta de registo.",
+        "Não me pagaram horas extra por falta de prova.",
         "Caos na gestão de horas trabalhadas mensalmente.",
         "Erro no cálculo de IRS e Segurança Social."
       ],
       solutions: [
         "Registo de horas de trabalho atómico.",
         "Relatório de horas para o IRS automático.",
-        "Controlo de pagamentos e vales integrado."
+        "Controlo de pagamentos e adiantamentos integrado."
       ],
       advantages: [
         { title: "Gestão de Horários", desc: "Registo rigoroso de entradas e saídas alinhado com a lei portuguesa." },
         { title: "Controlo de Horas Extra", desc: "Prove cada minuto trabalhado e garanta o seu pagamento correto." },
         { title: "Cálculo de IRS Portugal", desc: "Cálculo instantâneo de retenções para recibos verdes e contratos." },
-        { title: "Sincronização Cloud", desc: "Substitua a folha de horas manual por segurança digital total." },
-        { title: "Suporte Nexus Elite", desc: "Ajudamos com dúvidas sobre faturação e horas trabalhadas." },
-        { title: "Trabalho por Turnos", desc: "Otimizado para quem trabalha com horários rotativos ou flexíveis." }
+        { title: "Sincronização Cloud", desc: "Substitua a folha de horas manual por segurança digital total na Europa." },
+        { title: "Suporte Nexus Elite", desc: "Ajudamos com dúvidas sobre faturação e horas trabalhadas em PT." },
+        { title: "Trabalho por Turnos", desc: "Otimizado para quem trabalha com horários rotativos ou flexíveis em Portugal." }
       ],
       promo: {
         badge: "Oferta de Lançamento",
         title: "Vantagens",
         highlight: "Exclusivas Elite:",
         period: "/Ano",
-        sub: "Pague Uma Vez, Use o Ano Todo",
+        sub: "Pagamento Único, Uso Ilimitado",
         cta: "Ativar Licença Agora",
         advantages: [
           "App Registo de Horas Atómico",
@@ -59,7 +57,7 @@ export const translations: Record<string, any> = {
       },
       support: {
         title: "Suporte Especializado",
-        desc: "Dúvidas sobre como calcular horas extra ou organizar pagamentos? Estamos aqui."
+        desc: "Dúvidas sobre como calcular horas extra ou organizar pagamentos? A nossa equipa em Lisboa ajuda."
       },
       final: {
         title: "PARE DE PERDER",
@@ -67,14 +65,14 @@ export const translations: Record<string, any> = {
         cta: "Ativar Nexus Pro"
       },
       footer: {
-        note: "Digital Nexus. Gestão de Horas de Trabalho de Elite.",
+        note: "Digital Nexus Solutions. Gestão de Horas de Elite para Portugal.",
         privacy: "Privacidade",
-        terms: "Termos"
+        terms: "Termos de Uso"
       }
     },
     login: {
       secureAccess: "ACESSO SEGURO",
-      idNexus: "ID Nexus / Email",
+      idNexus: "ID Nexus / E-mail",
       securityKey: "Palavra-passe",
       validateAccess: "Entrar no App",
       platformNote: "Plataforma Digital Nexus Solutions",
@@ -90,20 +88,20 @@ export const translations: Record<string, any> = {
       entry: "Entrada",
       exit: "Saída",
       location: "Local / Serviço",
-      locationPlaceholder: "Local...",
-      advance: "Adiantamento",
+      locationPlaceholder: "Ex: Lisboa...",
+      advance: "Adiantamento (€)",
       extra: "Horas Extra",
       notes: "Observações",
-      absence: "falta",
-      lunch: "almoço",
-      sync: "registar",
-      update: "registar"
+      absence: "Falta",
+      lunch: "Almoço",
+      sync: "Registar",
+      update: "Atualizar"
     },
     settings: {
       title: "O Meu Perfil",
       idAndContact: "DADOS PESSOAIS",
       displayName: "Nome Completo",
-      taxId: "NIF / ID Fiscal",
+      taxId: "NIF (Contribuinte)",
       phone: "Telemóvel",
       standardHours: "HORÁRIO BASE",
       defaultEntry: "Entrada Padrão",
@@ -114,7 +112,7 @@ export const translations: Record<string, any> = {
       saved: "Guardado",
       security: {
         title: "Segurança",
-        newPassword: "Nova Senha",
+        newPassword: "Nova Palavra-passe",
         confirmPassword: "Confirmar"
       }
     }
