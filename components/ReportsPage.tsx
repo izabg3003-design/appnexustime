@@ -102,7 +102,7 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
             <div className="flex flex-col md:flex-row justify-between items-start border-b border-slate-100 pb-8 mb-8 gap-6 print:border-black print:pb-6">
               <div className="flex items-center gap-6">
                 <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center border border-slate-200 overflow-hidden no-print">
-                   <img src={user.photo || "https://ui-avatars.com/api/?name="+user.name} className="w-full h-full object-cover" />
+                   <img src={user.photo || "https://ui-avatars.com/api/?name="+user.name} className="w-full h-full object-cover" alt={user.name} />
                 </div>
                 <div>
                   <h3 className="text-2xl md:text-3xl font-black italic tracking-tighter uppercase text-slate-900 leading-none">
@@ -233,7 +233,9 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
                 </tbody>
                 <tfoot className="bg-slate-100 text-slate-900 font-black uppercase text-[8px] border-t-2 border-slate-200 print:bg-white print:text-black print:text-[6.5pt] print:border-black">
                   <tr>
-                    <td className="px-3 py-5" colSpan={3}>Totais do Mês</td>
+                    <td className="px-3 py-5">Totais</td>
+                    <td className="px-3 py-5"></td>
+                    <td className="px-3 py-5"></td>
                     <td className="px-2 py-5 text-center text-slate-500 font-bold">{summary.totalHours.toFixed(1)}h</td>
                     <td className="px-3 py-5"></td>
                     <td className="px-2 py-5 text-center text-amber-600">{f(summary.advancesTotal)}</td>
@@ -241,7 +243,7 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
                     <td className="px-2 py-5 text-right text-red-600">{f(summary.irsTotal)}</td>
                     <td className="px-2 py-5 text-right text-blue-600">{f(summary.socialSecurityTotal)}</td>
                     <td className="px-2 py-5 text-right">{f(summary.grossTotal)}</td>
-                    <td className="px-2 py-5 text-right bg-emerald-50 text-emerald-700 print:bg-white print:text-black">{f(summary.netTotal)}</td>
+                    <td className="px-2 py-5 text-right font-black text-slate-900">{f(summary.netTotal)}</td>
                     <td className="px-3 py-5 text-right"></td>
                   </tr>
                 </tfoot>
