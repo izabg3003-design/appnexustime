@@ -154,20 +154,21 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
             </h4>
             
             <div className="border border-slate-200 rounded-3xl overflow-x-auto no-scrollbar print:overflow-visible print:border-black print:rounded-none">
-              <table className="w-full text-left text-[11px] border-collapse min-w-[1100px] md:min-w-full print:min-w-full print:text-[6.5pt]">
+              <table className="w-full text-left text-[11px] border-collapse min-w-[1100px] md:min-w-full print:min-w-full print:text-[6.2pt]">
                 <thead className="bg-slate-50 text-slate-500 font-black uppercase border-b border-slate-200 print:bg-slate-100 print:text-black print:border-black">
                   <tr>
-                    <th className="px-3 py-4 w-[8%]">Data</th>
-                    <th className="px-2 py-4 text-center w-[10%]">Horário</th>
-                    <th className="px-1 py-4 text-center w-[4%]">Alm</th>
-                    <th className="px-2 py-4 text-center w-[6%]">H.Reais</th>
-                    <th className="px-3 py-4 w-[12%]">Localização</th>
-                    <th className="px-2 py-4 text-center w-[8%]">Adiant.</th>
-                    <th className="px-2 py-4 text-center w-[8%]">Extras</th>
-                    <th className="px-2 py-4 text-right w-[9%] text-red-600 print:text-black">IRS</th>
-                    <th className="px-2 py-4 text-right w-[9%] text-blue-600 print:text-black">S.S.</th>
-                    <th className="px-2 py-4 text-right w-[10%] font-black">Bruto</th>
-                    <th className="px-3 py-4 w-[16%]">Notas</th>
+                    <th className="px-3 py-4 w-[7%]">Data</th>
+                    <th className="px-2 py-4 text-center w-[9%]">Horário</th>
+                    <th className="px-1 py-4 text-center w-[3%]">Alm</th>
+                    <th className="px-2 py-4 text-center w-[5%]">Horas</th>
+                    <th className="px-3 py-4 w-[11%]">Localização</th>
+                    <th className="px-2 py-4 text-center w-[7%]">Adiant.</th>
+                    <th className="px-2 py-4 text-center w-[7%]">Extras</th>
+                    <th className="px-2 py-4 text-right w-[8%] text-red-600 print:text-black">IRS</th>
+                    <th className="px-2 py-4 text-right w-[8%] text-blue-600 print:text-black">S.S.</th>
+                    <th className="px-2 py-4 text-right w-[9%]">Bruto</th>
+                    <th className="px-2 py-4 text-right w-[11%] font-black text-emerald-600 print:text-black">Líquido</th>
+                    <th className="px-3 py-4 w-[15%]">Notas</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 print:divide-slate-300">
@@ -183,11 +184,16 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
                     const dailyExtraBonus = (h1 * user.hourlyRate * (user.overtimeRates.h1 / 100)) + 
                                             (h2 * user.hourlyRate * (user.overtimeRates.h2 / 100)) + 
                                             (h3 * user.hourlyRate * (user.overtimeRates.h3 / 100));
+                    
                     const rowGross = record.isAbsent ? 0 : (hours * user.hourlyRate) + dailyExtraBonus;
                     
-                    // Cálculo de Retenções Diárias Estimadas
-                    const rowIRS = user.isFreelancer ? 0 : (user.irs.type === 'percentage' ? (rowGross * user.irs.value / 100) : (summary.irsTotal / summary.daysWorked));
-                    const rowSS = user.isFreelancer ? 0 : (user.socialSecurity.type === 'percentage' ? (rowGross * user.socialSecurity.value / 100) : (summary.socialSecurityTotal / summary.daysWorked));
+                    // Cálculo de Retenções e Líquido Diário
+                    const calcTaxRow = (base: number, config: { value: number; type: 'percentage' | 'fixed' }) => 
+                      config.type === 'percentage' ? (base * config.value) / 100 : (config.value / summary.daysWorked);
+
+                    const rowIRS = record.isAbsent ? 0 : calcTaxRow(rowGross, user.irs);
+                    const rowSS = record.isAbsent ? 0 : calcTaxRow(rowGross, user.socialSecurity);
+                    const rowNet = rowGross - rowIRS - rowSS - (record.advance || 0);
 
                     return (
                       <tr key={date} className={`${record.isAbsent ? 'bg-red-50' : 'hover:bg-slate-50/30'} print:text-black`}>
@@ -214,15 +220,18 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
                         <td className="px-2 py-3 text-right text-blue-500 font-medium">
                           {rowSS > 0 ? `-${f(rowSS)}` : '-'}
                         </td>
-                        <td className="px-2 py-3 text-right font-black text-slate-900 print:text-black">
+                        <td className="px-2 py-3 text-right font-bold text-slate-900 print:text-black">
                           {!record.isAbsent ? f(rowGross) : '-'}
+                        </td>
+                        <td className="px-2 py-3 text-right font-black text-emerald-600 print:text-black">
+                          {!record.isAbsent ? f(rowNet) : '-'}
                         </td>
                         <td className="px-3 py-3 text-[8.5px] italic text-slate-400 print:text-black leading-tight">{record.notes || '-'}</td>
                       </tr>
                     );
                   })}
                 </tbody>
-                <tfoot className="bg-slate-100 text-slate-900 font-black uppercase text-[8px] border-t-2 border-slate-200 print:bg-white print:text-black print:text-[7pt] print:border-black">
+                <tfoot className="bg-slate-100 text-slate-900 font-black uppercase text-[8px] border-t-2 border-slate-200 print:bg-white print:text-black print:text-[6.5pt] print:border-black">
                   <tr>
                     <td className="px-3 py-5" colSpan={3}>Totais do Mês</td>
                     <td className="px-2 py-5 text-center text-slate-500 font-bold">{summary.totalHours.toFixed(1)}h</td>
@@ -231,10 +240,9 @@ const ReportsPage: React.FC<Props> = ({ user, records, t, f }) => {
                     <td className="px-2 py-5 text-center text-purple-600">+{summary.totalExtraHours}h</td>
                     <td className="px-2 py-5 text-right text-red-600">{f(summary.irsTotal)}</td>
                     <td className="px-2 py-5 text-right text-blue-600">{f(summary.socialSecurityTotal)}</td>
-                    <td className="px-2 py-5 text-right text-slate-900">{f(summary.grossTotal)}</td>
-                    <td className="px-3 py-5 text-right bg-emerald-50 text-emerald-700 border-l border-slate-200 print:bg-white print:text-black print:border-black">
-                      {f(summary.netTotal)}
-                    </td>
+                    <td className="px-2 py-5 text-right">{f(summary.grossTotal)}</td>
+                    <td className="px-2 py-5 text-right bg-emerald-50 text-emerald-700 print:bg-white print:text-black">{f(summary.netTotal)}</td>
+                    <td className="px-3 py-5 text-right"></td>
                   </tr>
                 </tfoot>
               </table>
