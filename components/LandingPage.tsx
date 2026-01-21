@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowRight, CheckCircle2, Sparkles, ShieldCheck, Zap, Clock, Wallet, Mail, ShieldAlert, Star, TrendingUp, FileText, Quote, Globe, Info, Megaphone, X, BarChart3, Users, Laptop, MousePointerClick
+  ArrowRight, CheckCircle2, Sparkles, ShieldCheck, Zap, Clock, Wallet, Mail, ShieldAlert, Star, TrendingUp, FileText, Quote, Globe, Info, Megaphone, X, BarChart3, Users, Laptop, MousePointerClick, Facebook
 } from 'lucide-react';
 import { Language, AppBanner } from '../types';
 import { supabase } from '../lib/supabase';
@@ -278,13 +278,17 @@ const LandingPage: React.FC<Props> = ({ onLogin, onSubscribe, onPrivacy, onTerms
                <ul className="space-y-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">
                   <li><a href="mailto:suporte.nexustime@gmail.com" className="hover:text-emerald-400 transition-colors">Ajuda com IRS</a></li>
                   <li><button onClick={onAbout} className="hover:text-emerald-400 transition-colors">Parcerias Nexus</button></li>
+                  <li><a href="https://www.facebook.com/share/1CSeJPHprp/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors flex items-center justify-center md:justify-start gap-2"><Facebook className="w-3 h-3" /> Facebook</a></li>
                </ul>
             </div>
           </div>
 
           <div className="max-w-7xl mx-auto pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
             <p className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.5em]">© 2026 Digital Nexus Solutions. Líder em Controlo de Horas de Trabalho.</p>
-            <div className="flex gap-6 opacity-30 grayscale hover:grayscale-0 transition-all">
+            <div className="flex gap-6 opacity-30 grayscale hover:grayscale-0 transition-all items-center">
+               <a href="https://www.facebook.com/share/1CSeJPHprp/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                  <Facebook className="w-5 h-5" />
+               </a>
                <Globe className="w-5 h-5 text-slate-500" />
                <MousePointerClick className="w-5 h-5 text-slate-500" />
             </div>

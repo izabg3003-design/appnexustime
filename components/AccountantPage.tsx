@@ -160,8 +160,8 @@ const AccountantPage: React.FC<Props> = ({ user, records, t, f }) => {
         </div>
 
         {/* TABELA DE RENDIMENTOS */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-[11px] border-collapse min-w-[800px]">
+        <div className="overflow-x-auto print:overflow-visible">
+          <table className="w-full text-left text-[11px] border-collapse min-w-[800px] print:min-w-full">
             <thead>
               <tr className="bg-slate-50 text-slate-400 font-black uppercase border-b border-slate-100 print:border-black">
                 <th className="px-6 py-5">Mês</th>
@@ -186,7 +186,7 @@ const AccountantPage: React.FC<Props> = ({ user, records, t, f }) => {
                 </tr>
               ))}
             </tbody>
-            <tfoot>
+            <tfoot className="print:table-footer-group">
               <tr className="bg-slate-900 text-white font-black uppercase text-[10px] print:bg-white print:text-black print:border-t-2 print:border-black">
                 <td className="px-6 py-6 rounded-bl-[2rem] print:rounded-none">Totais Acumulados</td>
                 <td className="px-6 py-6 text-center text-white font-bold print:text-black">{f(reportData.totals.gross - reportData.totals.extras)}</td>
