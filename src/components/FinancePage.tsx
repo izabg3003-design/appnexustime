@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { format, addMonths, subMonths } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { 
@@ -16,7 +17,8 @@ import {
   BarChart3
 } from 'lucide-react';
 import { UserProfile, WorkRecord, FinanceSummary } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { supabase } from '../lib/supabase';
 
 interface ExtendedFinanceSummary extends FinanceSummary {
   daysAbsent: number;
@@ -24,27 +26,42 @@ interface ExtendedFinanceSummary extends FinanceSummary {
 
 interface Props {
   user: UserProfile;
-  records: Record<string, WorkRecord>;
-  t: (key: string) => any;
   f: (value: number) => string;
-  isPro?: boolean;
+  t: (key: string) => any;
+  hideValues: boolean;
 }
 
-const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
+const FinancePage: React.FC<Props> = ({ user, f, t, hideValues }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [records, setRecords] = useState<WorkRecord[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const getNexusId = () => {
-    if (user.nexus_id) return user.nexus_id;
+  const isPro = user.subscription.status === 'premium' || user.role === 'admin' || user.role === 'master';
+
+  useEffect(() => {
+    fetchRecords();
+  }, [currentDate]);
+
+  const fetchRecords = async () => {
+    setLoading(true);
     try {
-      const sub = user.subscription;
-      if (!sub) return user.id?.substring(0, 8) || '---';
-      if (typeof sub === 'object') return sub.id || user.id?.substring(0, 8) || '---';
-      if (typeof sub === 'string') {
-        const parsed = JSON.parse(sub);
-        return parsed.id || user.id?.substring(0, 8) || '---';
-      }
-    } catch (e) { return user.id?.substring(0, 8) || '---'; }
-    return user.id?.substring(0, 8) || '---';
+      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString();
+      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString();
+
+      const { data, error } = await supabase
+        .from('work_records')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', startOfMonth)
+        .lte('date', endOfMonth);
+
+      if (error) throw error;
+      setRecords(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const calculateFinance = (): ExtendedFinanceSummary => {
@@ -62,43 +79,41 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
       ivaTotal: 0 
     };
     
-    const monthKey = format(currentDate, 'yyyy-MM');
-    const monthRecords = (Object.entries(records) as [string, WorkRecord][]).filter(([date]) => date.startsWith(monthKey));
-    
-    monthRecords.forEach(([_, record]) => {
-      if (record.isAbsent) {
+    records.forEach((record) => {
+      if (record.is_absent) {
         summary.daysAbsent += 1;
         return;
       }
       
       summary.daysWorked += 1;
-      const [hEntry, mEntry] = record.entry.split(':').map(Number);
-      const [hExit, mExit] = record.exit.split(':').map(Number);
-      let hours = (hExit + mExit/60) - (hEntry + mEntry/60);
-      if (record.hasLunchBreak) hours -= 1;
+      const entry = parseFloat(record.entry_time.replace(':', '.'));
+      const exit = parseFloat(record.exit_time.replace(':', '.'));
+      let hours = (exit - entry) - record.break_duration;
       
-      summary.totalHours += hours;
-      summary.advancesTotal += record.advance;
+      summary.totalHours += hours > 0 ? hours : 0;
+      summary.advancesTotal += record.advance || 0;
       
-      const extraH = record.extraHours.h1 + record.extraHours.h2 + record.extraHours.h3;
-      summary.totalExtraHours += extraH;
-      
-      const dailyExtraBonus = (record.extraHours.h1 * user.hourlyRate * (user.overtimeRates.h1 / 100)) + 
-                              (record.extraHours.h2 * user.hourlyRate * (user.overtimeRates.h2 / 100)) + 
-                              (record.extraHours.h3 * user.hourlyRate * (user.overtimeRates.h3 / 100));
-      
-      summary.extraHoursValue += dailyExtraBonus;
-      summary.grossTotal += (hours * user.hourlyRate) + dailyExtraBonus;
+      if (record.extra_hours > 0) {
+        summary.totalExtraHours += record.extra_hours;
+        const rate = user.hourlyRate || 0;
+        const overtimeRate = (user.overtimeRates?.r1 || 1.5) * rate;
+        summary.extraHoursValue += record.extra_hours * overtimeRate;
+      }
     });
 
-    const calcTax = (base: number, config: { value: number; type: 'percentage' | 'fixed' }) => 
-      config.type === 'percentage' ? (base * config.value) / 100 : config.value;
+    summary.grossTotal = (summary.totalHours * (user.hourlyRate || 0)) + summary.extraHoursValue;
 
-    if (!user.isFreelancer) {
-      summary.socialSecurityTotal = calcTax(summary.grossTotal, user.socialSecurity);
-      summary.irsTotal = calcTax(summary.grossTotal, user.irs);
+    const ssRate = user.socialSecurity || 0.11;
+    const irsRate = user.irs || 0.15;
+    const vatRate = user.vat || 0.23;
+
+    if (user.isFreelancer) {
+      summary.socialSecurityTotal = summary.grossTotal * ssRate;
+      summary.irsTotal = summary.grossTotal * irsRate;
+      summary.ivaTotal = summary.grossTotal * vatRate;
     } else {
-      summary.ivaTotal = calcTax(summary.grossTotal, user.vat);
+      summary.socialSecurityTotal = summary.grossTotal * ssRate;
+      summary.irsTotal = summary.grossTotal * irsRate;
     }
     
     summary.netTotal = summary.grossTotal - summary.socialSecurityTotal - summary.irsTotal - summary.advancesTotal + (user.isFreelancer ? summary.ivaTotal : 0);
@@ -113,13 +128,21 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
     { name: 'Líquido', value: summary.netTotal, color: '#10b981' }
   ];
 
+  if (loading) {
+    return (
+      <div className="p-20 text-center">
+        <div className="w-12 h-12 border-4 border-rose-500/20 border-t-rose-500 rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">A carregar finanças...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-fade-in pb-32">
-      {/* Header com Navegação Temporal */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h2 className="text-3xl font-black text-white italic tracking-tighter uppercase">NEXUS<span className="text-purple-400">FINANCE</span></h2>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Monitorização de Performance Financeira — #{getNexusId()}</p>
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mt-1">Monitorização de Performance Financeira — #{user.nexus_id}</p>
         </div>
         <div className="flex items-center gap-2 glass px-4 py-2 rounded-[1.5rem] border-white/10">
            <button onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="p-2 hover:bg-white/10 rounded-xl transition-all"><ChevronLeft className="w-5 h-5 text-slate-400" /></button>
@@ -128,7 +151,6 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
         </div>
       </div>
 
-      {/* Hero Card: Rendimento Líquido Principal */}
       <div className="btn-primary rounded-[3rem] p-10 text-white relative overflow-hidden shadow-[0_20px_60px_rgba(99,102,241,0.3)]">
          <div className="absolute top-0 right-0 p-10 opacity-10 pointer-events-none transform translate-x-10 -translate-y-10">
             <Wallet className="w-64 h-64" />
@@ -138,7 +160,7 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
               <TrendingUp className="w-4 h-4 text-emerald-400" />
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/70">Impacto Líquido na Carteira</p>
             </div>
-            <h3 className="text-6xl font-black tracking-tighter">{f(summary.netTotal)}</h3>
+            <h3 className="text-6xl font-black tracking-tighter">{hideValues ? '••••••' : f(summary.netTotal)}</h3>
             <div className="flex flex-wrap items-center gap-6 pt-6">
                <div className="flex items-center gap-2 text-white/60 text-[10px] font-black uppercase tracking-widest bg-black/20 px-4 py-2 rounded-full border border-white/5">
                   <CalendarCheck className="w-4 h-4 text-emerald-400" /> {summary.daysWorked} Dias de Trabalho
@@ -150,7 +172,6 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
          </div>
       </div>
 
-      {/* Grid de Métricas Expandidas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="glass p-8 rounded-[2.5rem] space-y-4 border-white/5 group hover:border-purple-500/30 transition-all">
            <div className="flex justify-between items-center">
@@ -189,7 +210,7 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Valor das Horas Extras</span>
               <div className="p-3 rounded-2xl bg-slate-900 border border-white/5"><DollarSign className="w-5 h-5 text-indigo-400" /></div>
            </div>
-           <p className="text-3xl font-black text-white">{f(summary.extraHoursValue)}</p>
+           <p className="text-3xl font-black text-white">{hideValues ? '••••••' : f(summary.extraHoursValue)}</p>
         </div>
 
         <div className="glass p-8 rounded-[2.5rem] space-y-4 border-white/5 group hover:border-slate-500 transition-all">
@@ -197,7 +218,7 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Rendimento Bruto</span>
               <div className="p-3 rounded-2xl bg-slate-900 border border-white/5"><DollarSign className="w-5 h-5 text-slate-300" /></div>
            </div>
-           <p className="text-3xl font-black text-white">{f(summary.grossTotal)}</p>
+           <p className="text-3xl font-black text-white">{hideValues ? '••••••' : f(summary.grossTotal)}</p>
         </div>
 
         <div className="glass p-8 rounded-[2.5rem] space-y-4 border-white/5 group hover:border-rose-500/30 transition-all">
@@ -205,7 +226,7 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Total de Impostos</span>
               <div className="p-3 rounded-2xl bg-slate-900 border border-white/5"><ShieldCheck className="w-5 h-5 text-rose-500" /></div>
            </div>
-           <p className="text-3xl font-black text-rose-500">{f(summary.irsTotal + summary.socialSecurityTotal)}</p>
+           <p className="text-3xl font-black text-rose-500">{hideValues ? '••••••' : f(summary.irsTotal + summary.socialSecurityTotal)}</p>
         </div>
 
         <div className="glass p-8 rounded-[2.5rem] space-y-4 border-white/5 group hover:border-amber-500/30 transition-all">
@@ -213,11 +234,10 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Vales Deduzidos</span>
               <div className="p-3 rounded-2xl bg-slate-900 border border-white/5"><AlertCircle className="w-5 h-5 text-amber-500" /></div>
            </div>
-           <p className="text-3xl font-black text-amber-500">{f(summary.advancesTotal)}</p>
+           <p className="text-3xl font-black text-amber-500">{hideValues ? '••••••' : f(summary.advancesTotal)}</p>
         </div>
       </div>
 
-      {/* Gráfico de Barras e Detalhamento */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="glass rounded-[3rem] p-10 space-y-8 border-white/5">
            <div className="flex items-center justify-between">
@@ -261,14 +281,14 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Imposto de Renda (IRS)</p>
                    <p className="text-xs text-slate-300">Baseado na taxa configurada no perfil</p>
                 </div>
-                <span className="text-lg font-black text-rose-500">-{f(summary.irsTotal)}</span>
+                <span className="text-lg font-black text-rose-500">-{hideValues ? '••••' : f(summary.irsTotal)}</span>
              </div>
              <div className="flex justify-between items-center py-4 border-b border-white/5">
                 <div className="space-y-1">
                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Segurança Social</p>
                    <p className="text-xs text-slate-300">Contribuição obrigatória do trabalhador</p>
                 </div>
-                <span className="text-lg font-black text-rose-500">-{f(summary.socialSecurityTotal)}</span>
+                <span className="text-lg font-black text-rose-500">-{hideValues ? '••••' : f(summary.socialSecurityTotal)}</span>
              </div>
              {user.isFreelancer && (
                <div className="flex justify-between items-center py-4 border-b border-white/5">
@@ -276,7 +296,7 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
                      <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">IVA Recuperável</p>
                      <p className="text-xs text-slate-300">Regime de prestação de serviços</p>
                   </div>
-                  <span className="text-lg font-black text-emerald-400">+{f(summary.ivaTotal)}</span>
+                  <span className="text-lg font-black text-emerald-400">+{hideValues ? '••••' : f(summary.ivaTotal)}</span>
                </div>
              )}
              <div className="flex justify-between items-center py-4">
@@ -284,7 +304,7 @@ const FinancePage: React.FC<Props> = ({ user, records, t, f, isPro }) => {
                    <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Vales e Antecipações</p>
                    <p className="text-xs text-slate-300">Total debitado durante o mês</p>
                 </div>
-                <span className="text-lg font-black text-amber-500">-{f(summary.advancesTotal)}</span>
+                <span className="text-lg font-black text-amber-500">-{hideValues ? '••••' : f(summary.advancesTotal)}</span>
              </div>
           </div>
         </div>

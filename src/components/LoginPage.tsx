@@ -5,9 +5,10 @@ import { Mail, Lock, User, ShieldCheck, ArrowRight, Loader2, Sparkles, CheckCirc
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
+  t: (key: string) => any;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess, t }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -249,3 +250,5 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     </div>
   );
 };
+
+export default LoginPage;

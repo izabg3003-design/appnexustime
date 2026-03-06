@@ -1,14 +1,34 @@
+
+export type AppState = 'splash' | 'language' | 'landing' | 'login' | 'dashboard' | 'finance' | 'reports' | 'accountant' | 'settings' | 'admin' | 'vendor_sales' | 'vendor_detail' | 'support' | 'user_support' | 'subscription' | 'privacy' | 'terms' | 'about';
+export type Language = 'pt' | 'en';
+export type Currency = 'EUR' | 'USD';
+
 export interface UserProfile {
   id: string;
   nexus_id: string;
   full_name: string;
   email: string;
+  nif?: string;
+  phone?: string;
+  photo?: string;
   role: 'user' | 'admin' | 'master';
   subscription: {
     status: 'free' | 'premium' | 'trial';
     plan: 'monthly' | 'yearly' | 'none';
     expires_at?: string;
   };
+  hourlyRate?: number;
+  overtimeRates?: {
+    r1: number;
+    r2: number;
+    r3: number;
+  };
+  socialSecurity?: number;
+  irs?: number;
+  vat?: number;
+  isFreelancer?: boolean;
+  defaultEntry?: string;
+  defaultExit?: string;
   created_at: string;
 }
 
@@ -35,5 +55,20 @@ export interface WorkRecord {
   break_duration: number;
   extra_hours: number;
   is_absent: boolean;
+  location?: string;
   notes?: string;
+  advance?: number;
+}
+
+export interface FinanceSummary {
+  totalHours: number;
+  totalExtraHours: number;
+  extraHoursValue: number;
+  grossTotal: number;
+  socialSecurityTotal: number;
+  irsTotal: number;
+  ivaTotal: number;
+  advancesTotal: number;
+  netTotal: number;
+  daysWorked: number;
 }
